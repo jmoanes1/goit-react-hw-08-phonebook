@@ -2,17 +2,17 @@ name: Deploy React App to GitHub Pages
 
 on:
   push:
-    branches: [ main ]   # or 'master' if your default branch is master
+    branches: [ main ]   
 
 permissions:
-  contents: write        # 👈 allow GitHub Actions to push to gh-pages branch
+  contents: write        
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout 
         uses: actions/checkout@v3
         with:
           persist-credentials: false
@@ -22,13 +22,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies 📦
+      - name: Install dependencies 
         run: npm install
 
-      - name: Build project 🏗️
+      - name: Build project 
         run: npm run build
 
-      - name: Deploy to GitHub Pages 🚀
+      - name: Deploy to GitHub Pages 
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
