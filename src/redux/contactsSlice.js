@@ -56,7 +56,7 @@ const contactsSlice = createSlice({
   initialState: {
     items: [],
     filter: '',
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    status: 'idle', 
     error: null,
   },
   reducers: {

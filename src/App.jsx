@@ -21,6 +21,8 @@ const PrivateRoute = ({ children }) => {
   return isLoggedIn ? children : <Navigate to="/login" />;
 };
 
+
+
 function App() {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -169,7 +171,7 @@ function App() {
     </Router>
   );
 }
-export default App;
+export default App
 // End of redux Apps.js //
 
 
