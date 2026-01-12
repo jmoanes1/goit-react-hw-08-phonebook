@@ -119,11 +119,15 @@ export const registerUser = createAsyncThunk(
 
       if (isNetworkError) {
         // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
-        console.warn('Registration: Real API unreachable, using IndexedDB mock API as fallback');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Registration: Real API unreachable, using IndexedDB mock API as fallback');
+        }
         try {
           const mockResponse = await mockRegisterUser(userData);
           await setAuthHeader(mockResponse.data.token);
-          console.log('Registration: Mock API registration successful');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Registration: Mock API registration successful');
+          }
           return mockResponse.data;
         } catch (mockError) {
           // Handle mock API errors
@@ -203,11 +207,15 @@ export const loginUser = createAsyncThunk(
 
       if (isNetworkError) {
         // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
-        console.warn('Login: Real API unreachable, using IndexedDB mock API as fallback');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Login: Real API unreachable, using IndexedDB mock API as fallback');
+        }
         try {
           const mockResponse = await mockLoginUser(userData);
           await setAuthHeader(mockResponse.data.token);
-          console.log('Login: Mock API login successful');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Login: Mock API login successful');
+          }
           return mockResponse.data;
         } catch (mockError) {
           // Handle mock API errors
@@ -244,9 +252,10 @@ export const logoutUser = createAsyncThunk(
     } catch (error) {
       // Even if API call fails, we should still log out locally
       // This handles cases where the API is down or network fails
+      // Silently handle network errors in production - this is expected behavior
       // Only log in development to reduce console noise
       if (process.env.NODE_ENV === 'development') {
-        console.log('Logout API call failed, but clearing local session (this is expected if server is unreachable)');
+        console.log('Logout API call failed, but clearing local session (this is expected if server is unreachable)', error);
       }
     } finally {
       // Always clear token and auth header, regardless of API call result
@@ -300,7 +309,10 @@ export const refreshUser = createAsyncThunk(
 
         // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
         if (isNetworkError) {
-          console.warn('Refresh: Real API unreachable, using IndexedDB mock API as fallback');
+          // Only log in development to reduce console noise in production
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Refresh: Real API unreachable, using IndexedDB mock API as fallback', error);
+          }
           try {
             const mockResponse = await mockRefreshUser(token);
             return mockResponse.data;
@@ -366,7 +378,9 @@ export const updateUser = createAsyncThunk(
         // Handle network errors
         if (error.request) {
           // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
-          console.warn('Update: Real API unreachable, using IndexedDB mock API as fallback');
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Update: Real API unreachable, using IndexedDB mock API as fallback');
+          }
           try {
             const mockResponse = await mockUpdateUser(token, userData);
             return mockResponse.data;
