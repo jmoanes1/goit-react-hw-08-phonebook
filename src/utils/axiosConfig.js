@@ -79,11 +79,21 @@ axiosInstance.interceptors.response.use(
 
     // Handle network errors (ERR_NETWORK, CORS, etc.)
     if (!error.response) {
+      // Detect CORS errors specifically
+      const isCorsError = 
+        error.message?.toLowerCase().includes('cors') ||
+        error.message?.toLowerCase().includes('cross-origin') ||
+        error.code === 'ERR_CORS' ||
+        (error.message === 'Network Error' && !error.request?.response);
+
       // Network error - could be CORS, timeout, or connection issue
       const networkError = {
-        message: error.message || 'Network error. Please check your connection.',
-        code: error.code || 'ERR_NETWORK',
+        message: isCorsError 
+          ? 'CORS error: The API server may not allow requests from this origin. Using local storage fallback.'
+          : (error.message || 'Network error. Please check your connection.'),
+        code: isCorsError ? 'ERR_CORS' : (error.code || 'ERR_NETWORK'),
         isNetworkError: true,
+        isCorsError: isCorsError,
       };
 
       // Log in development only
@@ -91,6 +101,7 @@ axiosInstance.interceptors.response.use(
         console.error('Network Error:', {
           message: error.message,
           code: error.code,
+          isCorsError: isCorsError,
           url: originalRequest?.url,
           baseURL: originalRequest?.baseURL,
         });
@@ -160,10 +171,20 @@ axios.interceptors.response.use(
   (error) => {
     // Handle network errors
     if (!error.response) {
+      // Detect CORS errors
+      const isCorsError = 
+        error.message?.toLowerCase().includes('cors') ||
+        error.message?.toLowerCase().includes('cross-origin') ||
+        error.code === 'ERR_CORS' ||
+        (error.message === 'Network Error' && !error.request?.response);
+
       const networkError = {
-        message: error.message || 'Network error',
-        code: error.code || 'ERR_NETWORK',
+        message: isCorsError 
+          ? 'CORS error: The API server may not allow requests from this origin.'
+          : (error.message || 'Network error'),
+        code: isCorsError ? 'ERR_CORS' : (error.code || 'ERR_NETWORK'),
         isNetworkError: true,
+        isCorsError: isCorsError,
       };
       return Promise.reject(networkError);
     }

@@ -101,17 +101,22 @@ export const fetchContacts = createAsyncThunk('contacts/fetchContacts', async (_
     }
 
     // Check if this is a network error (no response from server)
+    // CORS errors are also network errors (no response from server)
     const isNetworkError = error.request || 
                           error.message === 'Network Error' || 
                           error.code === 'ERR_NETWORK' ||
+                          error.code === 'ERR_CORS' ||
                           error.code === 'ECONNABORTED' ||
+                          error.isCorsError ||
                           !error.response;
 
-    // Automatically use mock API as fallback for network errors
+    // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
+    // This allows the app to work even when the API is not accessible
     if (isNetworkError) {
       // Only log in development to reduce console noise in production
       if (process.env.NODE_ENV === 'development') {
-        console.warn('fetchContacts: Real API unreachable, using IndexedDB mock API as fallback');
+        const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
+        console.warn(`fetchContacts: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
       }
       try {
         const mockResponse = await mockFetchContacts();
@@ -183,16 +188,20 @@ export const addContact = createAsyncThunk('contacts/addContact', async (contact
     }
 
     // Check if this is a network error (no response from server)
+    // CORS errors are also network errors (no response from server)
     const isNetworkError = error.request || 
                           error.message === 'Network Error' || 
                           error.code === 'ERR_NETWORK' ||
+                          error.code === 'ERR_CORS' ||
                           error.code === 'ECONNABORTED' ||
+                          error.isCorsError ||
                           !error.response;
 
-    // Automatically use mock API as fallback for network errors
+    // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
     if (isNetworkError) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('addContact: Real API unreachable, using IndexedDB mock API as fallback');
+        const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
+        console.warn(`addContact: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
       }
       try {
         const mockResponse = await mockAddContact(contact);
@@ -263,16 +272,20 @@ export const deleteContact = createAsyncThunk('contacts/deleteContact', async (i
     }
 
     // Check if this is a network error (no response from server)
+    // CORS errors are also network errors (no response from server)
     const isNetworkError = error.request || 
                           error.message === 'Network Error' || 
                           error.code === 'ERR_NETWORK' ||
+                          error.code === 'ERR_CORS' ||
                           error.code === 'ECONNABORTED' ||
+                          error.isCorsError ||
                           !error.response;
 
-    // Automatically use mock API as fallback for network errors
+    // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
     if (isNetworkError) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('deleteContact: Real API unreachable, using IndexedDB mock API as fallback');
+        const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
+        console.warn(`deleteContact: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
       }
       try {
         const mockResponse = await mockDeleteContact(id);

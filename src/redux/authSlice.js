@@ -109,16 +109,21 @@ export const registerUser = createAsyncThunk(
 
       // Handle network errors (no response received)
       // Check for network error by multiple conditions
+      // CORS errors are also network errors (no response from server)
       const isNetworkError = error.request || 
                             error.message === 'Network Error' || 
                             error.code === 'ERR_NETWORK' ||
+                            error.code === 'ERR_CORS' ||
                             error.code === 'ECONNABORTED' ||
+                            error.isCorsError ||
                             !error.response;
 
       if (isNetworkError) {
-        // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
+        // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
+        // This allows the app to work even when the API is not accessible
         if (process.env.NODE_ENV === 'development') {
-          console.warn('Registration: Real API unreachable, using IndexedDB mock API as fallback');
+          const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
+          console.warn(`Registration: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
         }
         try {
           const mockResponse = await mockRegisterUser(userData);
@@ -197,16 +202,21 @@ export const loginUser = createAsyncThunk(
 
       // Handle network errors (no response received)
       // Check for network error by multiple conditions
+      // CORS errors are also network errors (no response from server)
       const isNetworkError = error.request || 
                             error.message === 'Network Error' || 
                             error.code === 'ERR_NETWORK' ||
+                            error.code === 'ERR_CORS' ||
                             error.code === 'ECONNABORTED' ||
+                            error.isCorsError ||
                             !error.response;
 
       if (isNetworkError) {
-        // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
+        // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
+        // This allows the app to work even when the API is not accessible
         if (process.env.NODE_ENV === 'development') {
-          console.warn('Login: Real API unreachable, using IndexedDB mock API as fallback');
+          const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
+          console.warn(`Login: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
         }
         try {
           const mockResponse = await mockLoginUser(userData);
@@ -299,17 +309,22 @@ export const refreshUser = createAsyncThunk(
         }
 
         // Check if this is a network error (no response from server)
+        // CORS errors are also network errors (no response from server)
         const isNetworkError = error.request || 
                               error.message === 'Network Error' || 
                               error.code === 'ERR_NETWORK' ||
+                              error.code === 'ERR_CORS' ||
                               error.code === 'ECONNABORTED' ||
+                              error.isCorsError ||
                               !error.response;
 
-        // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
+        // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
+        // This allows the app to work even when the API is not accessible
         if (isNetworkError) {
           // Only log in development to reduce console noise in production
           if (process.env.NODE_ENV === 'development') {
-            console.warn('Refresh: Real API unreachable, using IndexedDB mock API as fallback', error);
+            const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
+            console.warn(`Refresh: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`, error);
           }
           try {
             const mockResponse = await mockRefreshUser(token);
@@ -373,11 +388,21 @@ export const updateUser = createAsyncThunk(
           });
         }
 
-        // Handle network errors
-        if (error.request) {
-          // Automatically use mock API as fallback for network errors (since we have IndexedDB database)
+        // Handle network errors (including CORS)
+        // CORS errors are also network errors (no response from server)
+        const isNetworkError = error.request || 
+                              error.message === 'Network Error' || 
+                              error.code === 'ERR_NETWORK' ||
+                              error.code === 'ERR_CORS' ||
+                              error.code === 'ECONNABORTED' ||
+                              error.isCorsError ||
+                              !error.response;
+
+        if (isNetworkError) {
+          // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
           if (process.env.NODE_ENV === 'development') {
-            console.warn('Update: Real API unreachable, using IndexedDB mock API as fallback');
+            const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
+            console.warn(`Update: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
           }
           try {
             const mockResponse = await mockUpdateUser(token, userData);
