@@ -35,22 +35,33 @@ function App() {
 
   // Refresh user on app load if token exists
   useEffect(() => {
-    dispatch(refreshUser());
+    const refresh = async () => {
+      try {
+        await dispatch(refreshUser()).unwrap();
+      } catch (err) {
+        // If refresh fails, user is not authenticated
+        // Only log in development to reduce console noise
+        if (process.env.NODE_ENV === 'development') {
+          console.log('User not authenticated or token expired');
+        }
+      }
+    };
+    refresh();
   }, [dispatch]);
 
-  // Fetch contacts when user logs in
+  // Fetch contacts when user logs in (only after refresh completes)
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && !isRefreshing) {
       dispatch(fetchContacts());
     }
-  }, [isLoggedIn, dispatch]);
+  }, [isLoggedIn, isRefreshing, dispatch]);
 
   // Show form if contacts exist, hide if no contacts
   useEffect(() => {
     setShowAddForm(contacts.length > 0);
   }, [contacts.length]);
 
-  const handleAddContact = (contact) => {
+  const handleAddContact = async (contact) => {
     // basic validation: non-empty & duplicate prevention (case-insensitive)
     if (!contact.name.trim()) {
       alert("Please enter a name.");
@@ -62,9 +73,19 @@ function App() {
       alert(`${contact.name} is already in contacts.`);
       return;
     }
-    dispatch(addContact(contact));
-    // Keep form visible after adding contact
-    setShowAddForm(true);
+    
+    // Dispatch addContact and handle errors
+    try {
+      await dispatch(addContact(contact)).unwrap();
+      // Keep form visible after adding contact
+      setShowAddForm(true);
+    } catch (err) {
+      // Error is already stored in state and will be displayed
+      console.error('Failed to add contact:', err);
+      // Show alert for immediate feedback
+      const errorMessage = typeof err === 'string' ? err : err?.message || 'Failed to add contact. Please try again.';
+      alert(errorMessage);
+    }
   };
 
   const handleShowAddForm = () => {
@@ -89,8 +110,16 @@ function App() {
     }, 100);
   };
 
-  const handleDelete = (id) => {
-    dispatch(deleteContact(id));
+  const handleDelete = async (id) => {
+    try {
+      await dispatch(deleteContact(id)).unwrap();
+    } catch (err) {
+      // Error is already stored in state and will be displayed
+      console.error('Failed to delete contact:', err);
+      // Show alert for immediate feedback
+      const errorMessage = typeof err === 'string' ? err : err?.message || 'Failed to delete contact. Please try again.';
+      alert(errorMessage);
+    }
   };
 
   const handleFilterChange = (value) => {
@@ -131,6 +160,28 @@ function App() {
                   {/* Show loading indicator when fetching */}
                   {status === 'loading' && <div className="loading">Updating contacts...</div>}
                   
+                  {/* Display error messages */}
+                  {error && status === 'failed' && (
+                    <div className="error-message" style={{
+                      padding: '12px 16px',
+                      marginBottom: '16px',
+                      backgroundColor: '#fee',
+                      border: '1px solid #fcc',
+                      borderRadius: 'var(--radius-sm)',
+                      color: '#c33',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 18.3333C14.6024 18.3333 18.3333 14.6024 18.3333 10C18.3333 5.39763 14.6024 1.66667 10 1.66667C5.39763 1.66667 1.66667 5.39763 1.66667 10C1.66667 14.6024 5.39763 18.3333 10 18.3333Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M10 6.66667V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M10 13.3333H10.0083" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>{error}</span>
+                    </div>
+                  )}
+                  
                   {showAddForm && (
                     <section className="card" id="add-contact-section">
                       <h2>Add contact</h2>
@@ -153,8 +204,8 @@ function App() {
                       contacts={contacts.filter((c) => 
                         c.name.toLowerCase().includes(filter.trim().toLowerCase())
                       )} 
-                      onDelete={handleDelete}
-                      onShowAddForm={handleShowAddForm}
+                      onDelete={handleDelete} 
+                      onShowAddForm={handleShowAddForm} 
                     />
                   </section>
                 </div>
