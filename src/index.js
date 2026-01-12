@@ -3,6 +3,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
+// Import axios configuration early to set up interceptors and ensure HTTPS
+import "./utils/axiosConfig";
 import App from "./App";
 import { store } from "./redux/store";
 import "./App.css";

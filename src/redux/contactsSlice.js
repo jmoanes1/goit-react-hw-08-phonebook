@@ -1,10 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { BASE_URL } from '../utils/axiosConfig';
 import { mockFetchContacts, mockAddContact, mockDeleteContact } from '../services/mockApi';
 import { dbGetToken } from '../services/db';
-
-// Backend API endpoint
-const BASE_URL = 'https://connections-api.goit.global';
 
 // Utility to ensure auth token is set in axios headers
 // This ensures JWT token is attached to all API requests

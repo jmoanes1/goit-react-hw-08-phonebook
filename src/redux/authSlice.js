@@ -1,10 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { BASE_URL } from '../utils/axiosConfig';
 import { mockRegisterUser, mockLoginUser, mockRefreshUser, mockUpdateUser } from '../services/mockApi';
 import { dbSaveToken, dbGetToken, dbRemoveToken } from '../services/db';
-
-// Set the base URL for the backend API
-const BASE_URL = 'https://connections-api.goit.global';
 
 // Utility to save token to IndexedDB and set axios header
 const setAuthHeader = async (token) => {

@@ -6,21 +6,23 @@
  */
 
 import axios from 'axios';
-
-// API Base URL
-const BASE_URL = 'https://connections-api.goit.global';
+import { BASE_URL } from '../utils/axiosConfig';
 
 // Token storage key
 const TOKEN_KEY = 'auth_token';
 
 /**
  * Create axios instance with default configuration
+ * Uses centralized configuration for GitHub Pages compatibility
  */
 const api = axios.create({
   baseURL: BASE_URL,
+  timeout: 30000, // 30 second timeout
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  withCredentials: false, // GitHub Pages compatibility
 });
 
 /**
