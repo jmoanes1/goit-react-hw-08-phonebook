@@ -18,6 +18,22 @@ import "./App.css";
 
 const PrivateRoute = ({ children }) => {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
+  const isRefreshing = useSelector(state => state.auth.isRefreshing);
+  const token = useSelector(state => state.auth.token);
+  
+  // If we're refreshing (checking auth status), wait before redirecting
+  // Also check if token exists as a fallback
+  if (isRefreshing || (token && !isLoggedIn)) {
+    // Show loading state while refreshing
+    return (
+      <div className="app">
+        <div className="container">
+          <div>Loading...</div>
+        </div>
+      </div>
+    );
+  }
+  
   return isLoggedIn ? children : <Navigate to="/login" />;
 };
 
@@ -33,21 +49,30 @@ function App() {
   const error = useSelector((state) => state.contacts.error);
   const [showAddForm, setShowAddForm] = useState(contacts.length > 0);
 
-  // Refresh user on app load if token exists
+  // Refresh user on app load - check both localStorage and IndexedDB for token
   useEffect(() => {
     const refresh = async () => {
-      try {
-        await dispatch(refreshUser()).unwrap();
-      } catch (err) {
-        // If refresh fails, user is not authenticated
-        // Only log in development to reduce console noise
-        if (process.env.NODE_ENV === 'development') {
-          console.log('User not authenticated or token expired');
+      // Only attempt refresh if we're not already logged in and we're still refreshing
+      // This prevents unnecessary API calls if user is already authenticated
+      // Also prevents refresh from running multiple times
+      if (!isLoggedIn && isRefreshing) {
+        try {
+          await dispatch(refreshUser()).unwrap();
+        } catch (err) {
+          // If refresh fails, user is not authenticated
+          // Only log in development to reduce console noise
+          if (process.env.NODE_ENV === 'development') {
+            const errorMsg = err?.message || 'Unknown error';
+            // Don't log "No token available" as it's expected when user is not logged in
+            if (!errorMsg.includes('No token available')) {
+              console.log('User not authenticated or token expired:', errorMsg);
+            }
+          }
         }
       }
     };
     refresh();
-  }, [dispatch]);
+  }, [dispatch, isLoggedIn, isRefreshing]);
 
   // Fetch contacts when user logs in (only after refresh completes)
   useEffect(() => {

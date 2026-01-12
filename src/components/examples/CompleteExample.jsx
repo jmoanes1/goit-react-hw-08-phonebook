@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { contactsAPI, authAPI, tokenService } from '../../services/api';
+import { useFormFieldIds } from '../../utils/useFormFieldIds';
 
 const CompleteExample = () => {
   // Contacts state
@@ -16,6 +17,12 @@ const CompleteExample = () => {
   // Form state
   const [formData, setFormData] = useState({ name: '', number: '' });
   const [editingId, setEditingId] = useState(null);
+
+  // Generate unique IDs for form fields using Unix timestamp
+  const fieldIds = useFormFieldIds({
+    name: 'complete-contact-name',
+    number: 'complete-contact-number',
+  });
 
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(tokenService.isAuthenticated());
@@ -197,23 +204,27 @@ const CompleteExample = () => {
         <h2>{editingId ? 'Edit Contact' : 'Add New Contact'}</h2>
         <div style={{ marginBottom: '10px' }}>
           <input
+            id={fieldIds.name}
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
             placeholder="Contact name"
             required
+            autoComplete="name"
             style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
           />
         </div>
         <div style={{ marginBottom: '10px' }}>
           <input
+            id={fieldIds.number}
             type="tel"
             name="number"
             value={formData.number}
             onChange={handleChange}
             placeholder="Phone number"
             required
+            autoComplete="tel"
             style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
           />
         </div>

@@ -174,6 +174,18 @@ export const loginUser = createAsyncThunk(
 
       // Handle server response errors (4xx, 5xx)
       if (error.response) {
+        // For 400 Bad Request, provide more specific error message
+        if (error.response.status === 400) {
+          const errorMessage = error.response.data?.message || 
+                              error.response.data?.error?.message ||
+                              'Invalid email or password. Please check your credentials and try again.';
+          return rejectWithValue({
+            status: error.response.status,
+            message: errorMessage,
+            data: error.response.data
+          });
+        }
+        // For other server errors
         return rejectWithValue({
           status: error.response.status,
           message: error.response.data?.message || 'Login failed',
@@ -251,8 +263,14 @@ export const refreshUser = createAsyncThunk(
   async (_, { getState, rejectWithValue }) => {
     try {
       const { auth } = getState();
-      // Get token from state or localStorage (in case state was lost on refresh)
-      const token = auth.token || getTokenFromStorage();
+      // Get token from state, localStorage, or IndexedDB (in case state was lost on refresh)
+      let token = auth.token || getTokenFromStorage();
+      
+      // If token not found in state or localStorage, try IndexedDB (async)
+      if (!token) {
+        token = await getTokenFromStorageAsync();
+      }
+      
       if (!token) {
         // No token available, user is not logged in
         // Only log in development to reduce console noise
@@ -261,7 +279,7 @@ export const refreshUser = createAsyncThunk(
         }
         return rejectWithValue({ message: 'No token available' });
       }
-      setAuthHeader(token);
+      await setAuthHeader(token);
       try {
         const response = await axios.get(`${BASE_URL}/users/current`);
         return response.data;
@@ -390,11 +408,13 @@ const getInitialState = () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
   // Always start with empty user data - it will be fetched from API via refreshUser()
+  // Always start with isRefreshing: true on initial load to prevent premature redirects
+  // This ensures PrivateRoute waits for refresh to complete, even if token is in IndexedDB
   return {
     user: { name: null, email: null },
     token: token,
     isLoggedIn: false, // Will be set to true after successful API refresh
-    isRefreshing: false,
+    isRefreshing: true, // Always start refreshing on initial load (prevents premature redirect)
     error: null,
   };
 };
@@ -428,6 +448,8 @@ const authSlice = createSlice({
       // Login
       .addCase(loginUser.pending, (state) => {
         state.error = null;
+        // Set isRefreshing to false during login to prevent refresh interference
+        state.isRefreshing = false;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
@@ -438,6 +460,18 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.error = action.payload;
+        // Clear any existing token if login fails (user might have wrong credentials)
+        // This prevents using stale tokens from previous sessions
+        if (action.payload?.status === 400 || action.payload?.status === 401) {
+          state.token = null;
+          state.isLoggedIn = false;
+          // Clear token from storage as well
+          setAuthHeader(null).catch(err => {
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Error clearing token after failed login:', err);
+            }
+          });
+        }
       })
       // Logout
       .addCase(logoutUser.pending, (state) => {

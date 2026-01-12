@@ -40,18 +40,27 @@ const LoginPage = () => {
         navigate('/contacts');
       }, 1500);
     } catch (err) {
-      console.error('Login failed:', err);
-      // Provide more detailed error message
+      // Provide more detailed error message based on error type
       let errorMessage = 'Login failed. Please check your credentials and try again.';
-      if (err && err.message) {
+      
+      // Handle different error formats
+      if (err?.message) {
         errorMessage = err.message;
-      } else if (err && err.data && err.data.message) {
+      } else if (err?.data?.message) {
         errorMessage = err.data.message;
-      } else if (err && err.networkError) {
-        errorMessage = err.message;
-      } else if (err && err.status) {
-        errorMessage = `Login failed: ${err.message}`;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
       }
+      
+      // Log error details only in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login failed:', {
+          error: err,
+          message: errorMessage,
+          status: err?.status
+        });
+      }
+      
       setError(errorMessage);
     } finally {
       setIsLoading(false);

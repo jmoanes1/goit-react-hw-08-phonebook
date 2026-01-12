@@ -129,6 +129,7 @@ const RegisterPage = () => {
                 placeholder="John Doe"
                 required
                 disabled={isLoading}
+                autoComplete="name"
               />
             </div>
           </div>
@@ -155,6 +156,7 @@ const RegisterPage = () => {
                 placeholder="john@example.com"
                 required
                 disabled={isLoading}
+                autoComplete="email"
               />
             </div>
           </div>
@@ -181,6 +183,7 @@ const RegisterPage = () => {
                 placeholder="Create a strong password"
                 required
                 disabled={isLoading}
+                autoComplete="new-password"
               />
               <button
                 type="button"

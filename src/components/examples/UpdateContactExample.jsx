@@ -123,6 +123,7 @@ const UpdateContactExample = ({ contactId, onUpdate }) => {
             placeholder="Enter contact name"
             disabled={loading}
             required
+            autoComplete="name"
           />
         </div>
 
@@ -137,6 +138,7 @@ const UpdateContactExample = ({ contactId, onUpdate }) => {
             placeholder="Enter phone number"
             disabled={loading}
             required
+            autoComplete="tel"
           />
         </div>
 

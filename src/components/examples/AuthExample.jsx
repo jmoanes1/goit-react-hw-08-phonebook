@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { authAPI, tokenService } from '../../services/api';
+import { useFormFieldIds } from '../../utils/useFormFieldIds';
 
 const AuthExample = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,6 +18,13 @@ const AuthExample = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+
+  // Generate unique IDs for form fields using Unix timestamp
+  const fieldIds = useFormFieldIds({
+    name: 'auth-name',
+    email: 'auth-email',
+    password: 'auth-password',
+  });
 
   /**
    * Handle form input changes
@@ -131,45 +139,48 @@ const AuthExample = () => {
       <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
         {!isLogin && (
           <div>
-            <label htmlFor="name">Name:</label>
+            <label htmlFor={fieldIds.name}>Name:</label>
             <input
               type="text"
-              id="name"
+              id={fieldIds.name}
               name="name"
               value={formData.name}
               onChange={handleChange}
               placeholder="Enter your name"
               disabled={loading}
               required={!isLogin}
+              autoComplete="name"
             />
           </div>
         )}
 
         <div>
-          <label htmlFor="email">Email:</label>
+          <label htmlFor={fieldIds.email}>Email:</label>
           <input
             type="email"
-            id="email"
+            id={fieldIds.email}
             name="email"
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter your email"
             disabled={loading}
             required
+            autoComplete="email"
           />
         </div>
 
         <div>
-          <label htmlFor="password">Password:</label>
+          <label htmlFor={fieldIds.password}>Password:</label>
           <input
             type="password"
-            id="password"
+            id={fieldIds.password}
             name="password"
             value={formData.password}
             onChange={handleChange}
             placeholder="Enter your password"
             disabled={loading}
             required
+            autoComplete={isLogin ? "current-password" : "new-password"}
           />
         </div>
 

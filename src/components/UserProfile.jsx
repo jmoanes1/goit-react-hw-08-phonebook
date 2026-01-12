@@ -154,6 +154,7 @@ const UserProfile = () => {
                 placeholder="Enter your full name"
                 required
                 disabled={isLoading}
+                autoComplete="name"
               />
             </div>
           </div>

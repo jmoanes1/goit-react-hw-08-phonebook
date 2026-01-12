@@ -93,6 +93,7 @@ const AddContactExample = () => {
             placeholder="Enter contact name"
             disabled={loading}
             required
+            autoComplete="name"
           />
         </div>
 
@@ -107,6 +108,7 @@ const AddContactExample = () => {
             placeholder="Enter phone number"
             disabled={loading}
             required
+            autoComplete="tel"
           />
         </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { useFormFieldIds } from "../utils/useFormFieldIds";
 
 /**
  * ContactForm
@@ -37,6 +38,12 @@ export default function ContactForm({ onAdd }) {
   const [name, setName] = useState("");
   const [rawNumber, setRawNumber] = useState(""); // digits only string
   const [displayNumber, setDisplayNumber] = useState("");
+
+  // Generate unique IDs for form fields using Unix timestamp
+  const fieldIds = useFormFieldIds({
+    name: 'contact-name',
+    phone: 'contact-phone',
+  });
 
   // update displayNumber when rawNumber changes
   useEffect(() => {
@@ -84,21 +91,28 @@ export default function ContactForm({ onAdd }) {
     <form onSubmit={handleSubmit}>
       <div className="form-row">
         <input
+          id={fieldIds.name}
+          name="name"
           className="input"
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           aria-label="Contact name"
+          autoComplete="name"
         />
       </div>
 
       <div className="form-row">
         <input
+          id={fieldIds.phone}
+          name="phone"
+          type="tel"
           className="input"
           placeholder="Phone (digits only, will format)"
           value={displayNumber}
           onChange={handleNumberChange}
           aria-label="Phone number"
+          autoComplete="tel"
         />
         <button type="submit" className="button small">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
