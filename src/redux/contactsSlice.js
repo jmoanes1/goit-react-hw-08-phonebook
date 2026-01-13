@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { BASE_URL } from '../utils/axiosConfig';
 import { mockFetchContacts, mockAddContact, mockDeleteContact } from '../services/mockApi';
 import { dbGetToken } from '../services/db';
+
+// Backend API endpoint
+const BASE_URL = 'https://connections-api.goit.global';
 
 // Utility to ensure auth token is set in axios headers
 // This ensures JWT token is attached to all API requests
@@ -19,10 +21,7 @@ const ensureAuthHeader = async () => {
     delete axios.defaults.headers.common['Authorization'];
     return false;
   } catch (error) {
-    // Only log in development to reduce console noise in production
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error getting token from IndexedDB:', error);
-    }
+    console.error('Error getting token from IndexedDB:', error);
     // Fallback to localStorage for synchronous access
     const token = localStorage.getItem('auth_token');
     if (token) {
@@ -62,9 +61,7 @@ export const fetchContacts = createAsyncThunk('contacts/fetchContacts', async (_
     const errorMessage = 'Authentication required. Please log in again.';
     // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('fetchContacts: No auth token found');
-      }
+      console.error('fetchContacts: No auth token found');
     }
     return rejectWithValue(errorMessage);
   }
@@ -73,9 +70,7 @@ export const fetchContacts = createAsyncThunk('contacts/fetchContacts', async (_
     const response = await axios.get(`${BASE_URL}/contacts`);
     // Only log success in development
     if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('fetchContacts: Successfully fetched contacts from API');
-      }
+      console.log('fetchContacts: Successfully fetched contacts from API');
     }
     // API is the source of truth - no need to sync to IndexedDB
     return response.data;
@@ -101,31 +96,20 @@ export const fetchContacts = createAsyncThunk('contacts/fetchContacts', async (_
     }
 
     // Check if this is a network error (no response from server)
-    // CORS errors are also network errors (no response from server)
     const isNetworkError = error.request || 
                           error.message === 'Network Error' || 
                           error.code === 'ERR_NETWORK' ||
-                          error.code === 'ERR_CORS' ||
                           error.code === 'ECONNABORTED' ||
-                          error.isCorsError ||
                           !error.response;
 
-    // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
-    // This allows the app to work even when the API is not accessible
+    // Automatically use mock API as fallback for network errors
     if (isNetworkError) {
-      // Only log in development to reduce console noise in production
-      if (process.env.NODE_ENV === 'development') {
-        const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
-        console.warn(`fetchContacts: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
-      }
+      console.warn('fetchContacts: Real API unreachable, using IndexedDB mock API as fallback');
       try {
         const mockResponse = await mockFetchContacts();
         return mockResponse.data;
       } catch (mockError) {
-        // Only log in development
-        if (process.env.NODE_ENV === 'development') {
-          console.error('fetchContacts: Mock API also failed', mockError);
-        }
+        console.error('fetchContacts: Mock API also failed', mockError);
         return rejectWithValue(error.message || 'Failed to fetch contacts');
       }
     }
@@ -143,9 +127,7 @@ export const addContact = createAsyncThunk('contacts/addContact', async (contact
     const errorMessage = 'Authentication required. Please log in again.';
     // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('addContact: No auth token found');
-      }
+      console.error('addContact: No auth token found');
     }
     return rejectWithValue(errorMessage);
   }
@@ -154,9 +136,7 @@ export const addContact = createAsyncThunk('contacts/addContact', async (contact
     const response = await axios.post(`${BASE_URL}/contacts`, contact);
     // Only log success in development
     if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('addContact: Successfully added contact to API', response.data);
-      }
+      console.log('addContact: Successfully added contact to API', response.data);
     }
     // API is the source of truth - no need to save to IndexedDB
     return response.data;
@@ -188,28 +168,20 @@ export const addContact = createAsyncThunk('contacts/addContact', async (contact
     }
 
     // Check if this is a network error (no response from server)
-    // CORS errors are also network errors (no response from server)
     const isNetworkError = error.request || 
                           error.message === 'Network Error' || 
                           error.code === 'ERR_NETWORK' ||
-                          error.code === 'ERR_CORS' ||
                           error.code === 'ECONNABORTED' ||
-                          error.isCorsError ||
                           !error.response;
 
-    // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
+    // Automatically use mock API as fallback for network errors
     if (isNetworkError) {
-      if (process.env.NODE_ENV === 'development') {
-        const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
-        console.warn(`addContact: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
-      }
+      console.warn('addContact: Real API unreachable, using IndexedDB mock API as fallback');
       try {
         const mockResponse = await mockAddContact(contact);
         return mockResponse.data;
       } catch (mockError) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('addContact: Mock API also failed', mockError);
-        }
+        console.error('addContact: Mock API also failed', mockError);
         return rejectWithValue(error.message || 'Failed to add contact');
       }
     }
@@ -227,9 +199,7 @@ export const deleteContact = createAsyncThunk('contacts/deleteContact', async (i
     const errorMessage = 'Authentication required. Please log in again.';
     // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('deleteContact: No auth token found');
-      }
+      console.error('deleteContact: No auth token found');
     }
     return rejectWithValue(errorMessage);
   }
@@ -238,9 +208,7 @@ export const deleteContact = createAsyncThunk('contacts/deleteContact', async (i
     await axios.delete(`${BASE_URL}/contacts/${id}`);
     // Only log success in development
     if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('deleteContact: Successfully deleted contact from API', id);
-      }
+      console.log('deleteContact: Successfully deleted contact from API', id);
     }
     // API is the source of truth - no need to delete from IndexedDB
     return id;
@@ -272,28 +240,20 @@ export const deleteContact = createAsyncThunk('contacts/deleteContact', async (i
     }
 
     // Check if this is a network error (no response from server)
-    // CORS errors are also network errors (no response from server)
     const isNetworkError = error.request || 
                           error.message === 'Network Error' || 
                           error.code === 'ERR_NETWORK' ||
-                          error.code === 'ERR_CORS' ||
                           error.code === 'ECONNABORTED' ||
-                          error.isCorsError ||
                           !error.response;
 
-    // Automatically use mock API as fallback for network errors (CORS, timeout, etc.)
+    // Automatically use mock API as fallback for network errors
     if (isNetworkError) {
-      if (process.env.NODE_ENV === 'development') {
-        const errorType = error.isCorsError || error.code === 'ERR_CORS' ? 'CORS' : 'Network';
-        console.warn(`deleteContact: Real API unreachable (${errorType} error), using IndexedDB mock API as fallback`);
-      }
+      console.warn('deleteContact: Real API unreachable, using IndexedDB mock API as fallback');
       try {
         const mockResponse = await mockDeleteContact(id);
         return mockResponse.data;
       } catch (mockError) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('deleteContact: Mock API also failed', mockError);
-        }
+        console.error('deleteContact: Mock API also failed', mockError);
         return rejectWithValue(error.message || 'Failed to delete contact');
       }
     }
