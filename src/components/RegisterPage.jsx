@@ -106,9 +106,15 @@ const RegisterPage = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form 
+          onSubmit={handleSubmit} 
+          className="auth-form"
+          name="register-form"
+          id="register-form"
+          autoComplete="on"
+        >
           <div className="form-group">
-            <label htmlFor="name" className="form-label">
+            <label htmlFor="register-name" className="form-label">
               Full Name
               <span className="required-indicator">*</span>
             </label>
@@ -119,7 +125,7 @@ const RegisterPage = () => {
               </svg>
               <input
                 type="text"
-                id="name"
+                id="register-name"
                 name="name"
                 className={`form-input ${focusedField === 'name' ? 'focused' : ''}`}
                 value={formData.name}
@@ -130,12 +136,14 @@ const RegisterPage = () => {
                 required
                 disabled={isLoading}
                 autoComplete="name"
+                aria-label="Full name"
+                aria-required="true"
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="email" className="form-label">
+            <label htmlFor="register-email" className="form-label">
               Email Address
               <span className="required-indicator">*</span>
             </label>
@@ -146,7 +154,7 @@ const RegisterPage = () => {
               </svg>
               <input
                 type="email"
-                id="email"
+                id="register-email"
                 name="email"
                 className={`form-input ${focusedField === 'email' ? 'focused' : ''}`}
                 value={formData.email}
@@ -157,12 +165,14 @@ const RegisterPage = () => {
                 required
                 disabled={isLoading}
                 autoComplete="email"
+                aria-label="Email address"
+                aria-required="true"
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="password" className="form-label">
+            <label htmlFor="register-password" className="form-label">
               Password
               <span className="required-indicator">*</span>
             </label>
@@ -173,7 +183,7 @@ const RegisterPage = () => {
               </svg>
               <input
                 type={showPassword ? "text" : "password"}
-                id="password"
+                id="register-password"
                 name="password"
                 className={`form-input ${focusedField === 'password' ? 'focused' : ''}`}
                 value={formData.password}
@@ -184,6 +194,8 @@ const RegisterPage = () => {
                 required
                 disabled={isLoading}
                 autoComplete="new-password"
+                aria-label="Password"
+                aria-required="true"
               />
               <button
                 type="button"

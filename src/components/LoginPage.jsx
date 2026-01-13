@@ -100,9 +100,15 @@ const LoginPage = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form 
+          onSubmit={handleSubmit} 
+          className="auth-form"
+          name="login-form"
+          id="login-form"
+          autoComplete="on"
+        >
           <div className="form-group">
-            <label htmlFor="email" className="form-label">
+            <label htmlFor="login-email" className="form-label">
               Email Address
               <span className="required-indicator">*</span>
             </label>
@@ -113,7 +119,7 @@ const LoginPage = () => {
               </svg>
               <input
                 type="email"
-                id="email"
+                id="login-email"
                 name="email"
                 className={`form-input ${focusedField === 'email' ? 'focused' : ''}`}
                 value={formData.email}
@@ -124,12 +130,14 @@ const LoginPage = () => {
                 required
                 disabled={isLoading}
                 autoComplete="email"
+                aria-label="Email address"
+                aria-required="true"
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="password" className="form-label">
+            <label htmlFor="login-password" className="form-label">
               Password
               <span className="required-indicator">*</span>
             </label>
@@ -140,7 +148,7 @@ const LoginPage = () => {
               </svg>
               <input
                 type={showPassword ? "text" : "password"}
-                id="password"
+                id="login-password"
                 name="password"
                 className={`form-input ${focusedField === 'password' ? 'focused' : ''}`}
                 value={formData.password}
@@ -151,6 +159,8 @@ const LoginPage = () => {
                 required
                 disabled={isLoading}
                 autoComplete="current-password"
+                aria-label="Password"
+                aria-required="true"
               />
               <button
                 type="button"
