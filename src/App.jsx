@@ -165,8 +165,26 @@ function App() {
     );
   }
 
+  // Determine basename dynamically based on environment
+  // Use PUBLIC_URL from build process, or extract from homepage in package.json
+  // Empty string for localhost, repo name for GitHub Pages
+  const getBasename = () => {
+    // PUBLIC_URL is set by react-scripts during build
+    if (process.env.PUBLIC_URL) {
+      return process.env.PUBLIC_URL;
+    }
+    // For production builds on GitHub Pages, extract from window.location
+    if (process.env.NODE_ENV === 'production' && window.location.pathname.includes('/goit-react-hw-08-phonebook')) {
+      return '/goit-react-hw-08-phonebook';
+    }
+    // Default to empty string for localhost
+    return '';
+  };
+
+  const basename = getBasename();
+
   return (
-    <Router basename="/goit-react-hw-08-phonebook">
+    <Router basename={basename}>
       <div className="app">
         <header>
           <div className={`header-container ${!isLoggedIn ? 'centered' : ''}`}>

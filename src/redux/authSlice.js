@@ -237,10 +237,42 @@ export const loginUser = createAsyncThunk(
 // Logout user
 export const logoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
+    // Get token from state or storage before clearing
+    const { auth } = getState();
+    let token = auth.token;
+    
+    // If token not in state, try to get it from storage
+    if (!token) {
+      token = await getTokenFromStorageAsync();
+    }
+    
+    // Ensure token is set in axios headers before making logout request
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+    
     try {
-      // Try to call logout API endpoint
-      await axios.post(`${BASE_URL}/users/logout`);
+      // Try to call logout API endpoint with proper Authorization header
+      // Use axios directly with explicit headers to ensure token is sent
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Only add Authorization header if token exists
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      await axios.post(
+        `${BASE_URL}/users/logout`,
+        {},
+        {
+          headers: headers,
+          // Ensure credentials are included for cross-origin requests
+          withCredentials: false, // API doesn't use cookies, so false is fine
+        }
+      );
     } catch (error) {
       // Even if API call fails, we should still log out locally
       // This handles cases where the API is down or network fails
